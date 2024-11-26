@@ -5,11 +5,6 @@ import time
 
 time1=time.time()
 
-def gini_impurity(y):
-    classes, counts = np.unique(y, return_counts=True)
-    prob = counts / counts.sum()
-    return 1 - np.sum(prob**2)
-
 def information_gain(y, y_left, y_right):
     p_left = len(y_left) / len(y)
     p_right = len(y_right) / len(y)
@@ -20,8 +15,6 @@ def split_data(X, y, feature, threshold):
     left_idx = X[:, feature] <= threshold
     right_idx = X[:, feature] > threshold
     return X[left_idx], y[left_idx], X[right_idx], y[right_idx]
-
-import numpy as np
 
 def gini_impurity(counts):
     total = counts.sum()
