@@ -1,0 +1,126 @@
+CODE:
+layer_options = [[784, 128, 5], [784, 256, 128, 5], [784, 512, 256, 128, 5]]
+dropout_rates = [0.2, 0.3, 0.5]
+
+for layers in layer_options:
+    for dropout in dropout_rates:
+        nn = NeuralNetwork(layers, learning_rate=0.001, dropout_rate=dropout)
+        nn.train(X_train, y_train, epochs=100)
+        accuracy = nn.accuracy(nn.predict(X_test), y_test)
+        print(f"Layers: {layers}, Dropout: {dropout}, Accuracy: {accuracy}")
+		
+		
+OUTPUT OF CODE:
+Test Accuracy: 80.10%
+layers: [784, 128, 5], dropout: 0.2
+Epoch 0, Loss: 1.2920
+Epoch 10, Loss: 0.5831
+Epoch 20, Loss: 0.4275
+Epoch 30, Loss: 0.3334
+Epoch 40, Loss: 0.4194
+Epoch 50, Loss: 0.5225
+Epoch 60, Loss: 0.2807
+Epoch 70, Loss: 0.8202
+Epoch 80, Loss: 0.6499
+Epoch 90, Loss: 0.4382
+Layers: [784, 128, 5], Dropout: 0.2, Accuracy: 0.8358
+layers: [784, 128, 5], dropout: 0.3
+Epoch 0, Loss: 0.8200
+Epoch 10, Loss: 0.4906
+Epoch 20, Loss: 0.4412
+Epoch 30, Loss: 0.2982
+Epoch 40, Loss: 0.1987
+Epoch 50, Loss: 0.5179
+Epoch 60, Loss: 0.4995
+Epoch 70, Loss: 0.4942
+Epoch 80, Loss: 0.3499
+Epoch 90, Loss: 0.4869
+Layers: [784, 128, 5], Dropout: 0.3, Accuracy: 0.834
+layers: [784, 128, 5], dropout: 0.5
+Epoch 0, Loss: 1.7099
+Epoch 10, Loss: 0.7919
+Epoch 20, Loss: 0.7298
+Epoch 30, Loss: 0.3157
+Epoch 40, Loss: 0.5039
+Epoch 50, Loss: 0.3266
+Epoch 60, Loss: 0.3879
+Epoch 70, Loss: 0.3028
+Epoch 80, Loss: 0.1298
+Epoch 90, Loss: 0.2467
+Layers: [784, 128, 5], Dropout: 0.5, Accuracy: 0.8158
+layers: [784, 256, 128, 5], dropout: 0.2
+Epoch 0, Loss: 1.1972
+Epoch 10, Loss: 0.8050
+Epoch 20, Loss: 0.3703
+Epoch 30, Loss: 0.4073
+Epoch 40, Loss: 0.7189
+Epoch 50, Loss: 0.3333
+Epoch 60, Loss: 0.2152
+Epoch 70, Loss: 0.7852
+Epoch 80, Loss: 0.3369
+Epoch 90, Loss: 0.5236
+Layers: [784, 256, 128, 5], Dropout: 0.2, Accuracy: 0.8322
+layers: [784, 256, 128, 5], dropout: 0.3
+Epoch 0, Loss: 1.3174
+Epoch 10, Loss: 0.6182
+Epoch 20, Loss: 0.6660
+Epoch 30, Loss: 0.8542
+Epoch 40, Loss: 0.3567
+Epoch 50, Loss: 0.5871
+Epoch 60, Loss: 0.5785
+Epoch 70, Loss: 0.8071
+Epoch 80, Loss: 0.6857
+Epoch 90, Loss: 0.5392
+Layers: [784, 256, 128, 5], Dropout: 0.3, Accuracy: 0.8214
+layers: [784, 256, 128, 5], dropout: 0.5
+Epoch 0, Loss: 2.4640
+Epoch 10, Loss: 1.3237
+Epoch 20, Loss: 0.5633
+Epoch 30, Loss: 0.5984
+Epoch 40, Loss: 0.4310
+Epoch 50, Loss: 0.8106
+Epoch 60, Loss: 0.5243
+Epoch 70, Loss: 0.7293
+Epoch 80, Loss: 0.8186
+Epoch 90, Loss: 0.5011
+Layers: [784, 256, 128, 5], Dropout: 0.5, Accuracy: 0.8
+layers: [784, 512, 256, 128, 5], dropout: 0.2
+Epoch 0, Loss: 1.0602
+Epoch 10, Loss: 0.7741
+Epoch 20, Loss: 0.5812
+Epoch 30, Loss: 0.3843
+Epoch 40, Loss: 0.2086
+Epoch 50, Loss: 0.9272
+Epoch 60, Loss: 0.9293
+Epoch 70, Loss: 0.7136
+Epoch 80, Loss: 0.1103
+Epoch 90, Loss: 0.8996
+Layers: [784, 512, 256, 128, 5], Dropout: 0.2, Accuracy: 0.8344
+layers: [784, 512, 256, 128, 5], dropout: 0.3
+Epoch 0, Loss: 1.5457
+Epoch 10, Loss: 1.0551
+Epoch 20, Loss: 0.6896
+Epoch 30, Loss: 0.3086
+Epoch 40, Loss: 0.6670
+Epoch 50, Loss: 0.7628
+Epoch 60, Loss: 0.4794
+Epoch 70, Loss: 0.8789
+Epoch 80, Loss: 0.4179
+Epoch 90, Loss: 0.6584
+Layers: [784, 512, 256, 128, 5], Dropout: 0.3, Accuracy: 0.8188
+layers: [784, 512, 256, 128, 5], dropout: 0.5
+Epoch 0, Loss: 2.2303
+Epoch 10, Loss: 1.2331
+Epoch 20, Loss: 1.4874
+Epoch 30, Loss: 0.8325
+Epoch 40, Loss: 0.9124
+Epoch 50, Loss: 1.3010
+Epoch 60, Loss: 0.7468
+Epoch 70, Loss: 0.6035
+Epoch 80, Loss: 0.7573
+Epoch 90, Loss: 0.8713
+Layers: [784, 512, 256, 128, 5], Dropout: 0.5, Accuracy: 0.7298
+
+
+BEST ONE:
+Layers: [784, 128, 5], Dropout: 0.2, Accuracy: 0.8358
