@@ -1,6 +1,0 @@
-Reduction of dimensions to 2 -> scatterplot -> the classes are already identifiable to some degree
-Reduction of dimensions to 3 -> scatterplot -> the classes are already identifiable to some degree
-
-The classes are evenly split in the train data (~same number of images per class)
-The mean and standard deviation of images (pixel values) don't have any predictive power.
-Purely using pixel intensity might not be enough to differentiate between the classes.

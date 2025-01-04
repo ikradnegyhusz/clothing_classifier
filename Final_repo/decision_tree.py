@@ -1,106 +1,81 @@
-import math
+
 import numpy as np
 
+def gini_impurity(y):
+    classes, counts = np.unique(y, return_counts=True)
+    prob = counts / counts.sum()
+    return 1 - np.sum(prob**2)
 
-def gini_impurity(y, K_classes):
-    if len(y) == 0:
-        return 0
-    s = 0
-    for i in K_classes:
-        p = np.sum(y == i) / len(y)
-        s += p**2
-    return 1-s
+def information_gain(y, y_left, y_right):
+    p_left = len(y_left) / len(y)
+    p_right = len(y_right) / len(y)
+    
+    return gini_impurity(y) - (p_left * gini_impurity(y_left) + p_right * gini_impurity(y_right))
 
-def PL_weight(N_L_or_R, N_u):
-    '''
-    N_L - number of elements in the left split
-    N_u - number of elements in the node split
-    N_R - number of elements in the right split
-    '''
-    return N_L_or_R / N_u
+def split_data(X, y, feature, threshold):
+    left_idx = X[:, feature] <= threshold
+    right_idx = X[:, feature] > threshold
+    return X[left_idx], y[left_idx], X[right_idx], y[right_idx]
 
-def calculate_depth(tree):
-    # If the tree list is empty, depth is 0
-    if not tree:
-        return 0
-    # Calculate depth using the formula
-    return math.floor(math.log2(len(tree))) + 1
-
-def max_depth(tree):
-    if not tree:
-        return 0
-    return 2**tree - 1
-
-class tree:
-    def __init__(self, df, K_classes):
-        higest_info_gain = [0, 0, 0]
-
-        for row in range(1,len(df)):
-            for col in range(1,len(df[0])-1):
-                right = df[df[:, col] >= df[row, col]][:, -1]
-                left = df[df[:, col] < df[row, col]][:, -1]
-
-                gini_right = gini_impurity(right, K_classes) 
-                gini_left = gini_impurity(left, K_classes)
-
-                w_right = PL_weight(len(right), len(df))
-                w_left = PL_weight(len(left), len(df))
-
-                gini_combined_weigthed = w_right * gini_right + w_left * gini_left
-
-                info_gain = gini_impurity(df[:, -1], K_classes) - gini_combined_weigthed
-
-                if info_gain > higest_info_gain[0]:
-                    higest_info_gain = [info_gain, row, col, gini_combined_weigthed]
-            print(f'{row/len(df)*100}%')
-
-        best_row, best_col = higest_info_gain[1], higest_info_gain[2]
-        threshold = df[best_row, best_col]
-
-
-        right_split = df[df[:, best_col] >= threshold]
-        left_split = df[df[:, best_col] < threshold]
-
-
-        self.matrix = df
-        self.threshold = threshold
-        self.right_split = right_split
-        self.left_split = left_split
-        self.info_gain = higest_info_gain[0]
-        self.gini_combined_weigthed = higest_info_gain[2]
-
-class DT:
-    def __init__(self, df, K_classes, depth):
-        self.df = df
-        self.K_classes = K_classes
-        self.dt = []
-        i = 0
-        while len(self.dt) <= max_depth(depth):
-            if len(self.dt) < 3:
-                root = tree(df, K_classes)
-                right = tree(root.right_split, K_classes)
-                left = tree(root.left_split, K_classes)
-                if (root.info_gain == 0):
-                    break
-                self.dt.append(root)
-                if (right.info_gain == 0):
-                    break
-                self.dt.append(right)
-                if (left.info_gain == 0):
-                    break
-                self.dt.append(left)
+class DecisionTree:
+    def __init__(self, max_depth=None, min_samples_split=2):
+        self.max_depth = max_depth
+        self.min_samples_split = min_samples_split
+        self.tree = None
+    
+    def fit(self, X, y):
+        self.tree = self._build_tree(X, y, depth=0)
+    
+    def _build_tree(self, X, y, depth):
+        n_samples, n_features = X.shape
+        #stopping conditions
+        if n_samples < self.min_samples_split or depth == self.max_depth or len(np.unique(y)) == 1:
+            if len(y)==len(set(y)):
+                cls_return = y[np.random.randint(0,len(y))]
             else:
-                root = tree(self.dt[i].right_split, K_classes)
-                right = tree(root.right_split, K_classes)
-                left = tree(root.left_split, K_classes)
-                if (root.info_gain == 0):
-                    break
-                self.dt.append(root)
-                if (right.info_gain == 0):
-                    break
-                self.dt.append(right)
+                cls_return = np.argmax(np.bincount(y.astype(int))) 
+
+            return {'type': 'leaf', 'class': cls_return}
+        
+        # splitting, finding best split with highest information gain
+        best_feature, best_threshold, best_gain = None, None, -np.inf
+        for feature in range(n_features):
+            thresholds = np.unique(X[:, feature])
+            for threshold in thresholds:
+                X_left, y_left, X_right, y_right = split_data(X, y, feature, threshold)
+                if len(y_left) == 0 or len(y_right) == 0:
+                    continue
+                gain = information_gain(y, y_left, y_right)
                 
-                if (left.info_gain == 0):
-                    break
-                self.dt.append(left)
-            i += 1
+                if gain > best_gain:
+                    best_gain = gain
+                    best_feature = feature
+                    best_threshold = threshold
+        
+        # Fallback to leaf node if no valid split found
+        if best_gain == -np.inf or best_feature is None or best_feature >= n_features:
+            return {'type': 'leaf', 'class': np.argmax(np.bincount(y.astype(int)))}
+
+
+        X_left, y_left, X_right, y_right = split_data(X, y, best_feature, best_threshold)
+        left_subtree = self._build_tree(X_left, y_left, depth + 1)
+        right_subtree = self._build_tree(X_right, y_right, depth + 1)
+        
+        return {
+            'type': 'node',
+            'feature': best_feature,
+            'threshold': best_threshold,
+            'left': left_subtree,
+            'right': right_subtree
+        }
+    
+    def predict(self, X):
+        return np.array([self._predict_one(x, self.tree) for x in X])
+    
+    def _predict_one(self, x, tree):
+        if tree['type'] == 'leaf':
+            return tree['class']
+        if x[tree['feature']] <= tree['threshold']:
+            return self._predict_one(x, tree['left'])
+        else:
+            return self._predict_one(x, tree['right'])
