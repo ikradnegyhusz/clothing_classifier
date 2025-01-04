@@ -1,0 +1,81 @@
+
+import numpy as np
+
+def gini_impurity(y):
+    classes, counts = np.unique(y, return_counts=True)
+    prob = counts / counts.sum()
+    return 1 - np.sum(prob**2)
+
+def information_gain(y, y_left, y_right):
+    p_left = len(y_left) / len(y)
+    p_right = len(y_right) / len(y)
+    
+    return gini_impurity(y) - (p_left * gini_impurity(y_left) + p_right * gini_impurity(y_right))
+
+def split_data(X, y, feature, threshold):
+    left_idx = X[:, feature] <= threshold
+    right_idx = X[:, feature] > threshold
+    return X[left_idx], y[left_idx], X[right_idx], y[right_idx]
+
+class DecisionTree:
+    def __init__(self, max_depth=None, min_samples_split=2):
+        self.max_depth = max_depth
+        self.min_samples_split = min_samples_split
+        self.tree = None
+    
+    def fit(self, X, y):
+        self.tree = self._build_tree(X, y, depth=0)
+    
+    def _build_tree(self, X, y, depth):
+        n_samples, n_features = X.shape
+        #stopping conditions
+        if n_samples < self.min_samples_split or depth == self.max_depth or len(np.unique(y)) == 1:
+            if len(y)==len(set(y)):
+                cls_return = y[np.random.randint(0,len(y))]
+            else:
+                cls_return = np.argmax(np.bincount(y.astype(int))) 
+
+            return {'type': 'leaf', 'class': cls_return}
+        
+        # splitting, finding best split with highest information gain
+        best_feature, best_threshold, best_gain = None, None, -np.inf
+        for feature in range(n_features):
+            thresholds = np.unique(X[:, feature])
+            for threshold in thresholds:
+                X_left, y_left, X_right, y_right = split_data(X, y, feature, threshold)
+                if len(y_left) == 0 or len(y_right) == 0:
+                    continue
+                gain = information_gain(y, y_left, y_right)
+                
+                if gain > best_gain:
+                    best_gain = gain
+                    best_feature = feature
+                    best_threshold = threshold
+        
+        # Fallback to leaf node if no valid split found
+        if best_gain == -np.inf or best_feature is None or best_feature >= n_features:
+            return {'type': 'leaf', 'class': np.argmax(np.bincount(y.astype(int)))}
+
+
+        X_left, y_left, X_right, y_right = split_data(X, y, best_feature, best_threshold)
+        left_subtree = self._build_tree(X_left, y_left, depth + 1)
+        right_subtree = self._build_tree(X_right, y_right, depth + 1)
+        
+        return {
+            'type': 'node',
+            'feature': best_feature,
+            'threshold': best_threshold,
+            'left': left_subtree,
+            'right': right_subtree
+        }
+    
+    def predict(self, X):
+        return np.array([self._predict_one(x, self.tree) for x in X])
+    
+    def _predict_one(self, x, tree):
+        if tree['type'] == 'leaf':
+            return tree['class']
+        if x[tree['feature']] <= tree['threshold']:
+            return self._predict_one(x, tree['left'])
+        else:
+            return self._predict_one(x, tree['right'])
