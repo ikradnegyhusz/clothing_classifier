@@ -37,7 +37,7 @@ def bootstrapping_test(model_filepath,n=1000,prnt = True):
 
         # make predictions with model
         preds = model.predict(X)
-        if (type(preds[0]) is np.array) or (type(preds[0]) is not np.int64): # for tensorflow prediction output
+        if (type(preds[0]) is np.array) or (type(preds[0]) is not np.int64):
             preds = np.argmax(preds,axis=1)
 
         # store metrics into lists
