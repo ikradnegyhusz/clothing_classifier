@@ -1,15 +1,25 @@
-import pickle
 import numpy as np
+from sklearn.decomposition import PCA
 
-def preprocess(data):
-    '''
-    Function to preprocess the data by scaling and applying PCA
-    imput: numpy array
-    '''
-    df_scaled = (data[:, :-1] - data[:, :-1].mean(axis=1, keepdims=True)) / data[:, :-1].std(axis=1, keepdims=True)
-    pca = pickle.load(open('./models/pca_model.pkl', 'rb'))
-    df_scaled_pcs = pca.transform(df_scaled)
-    y = data[:,-1] 
-    y = y.reshape(-1, 1) 
-    df_with_y = np.hstack((df_scaled_pcs, y)) 
-    return df_with_y
+def load_data(filename):
+    data = np.load(filename)
+    X=data[:,0:-1]
+    y=data[:,-1]
+    return X,y
+
+def standardize(image_data,axis=1):
+    # Compute mean and std along the picked axis
+    mean = np.mean(image_data, axis=axis, keepdims=True)
+    std = np.std(image_data, axis=axis, keepdims=True)
+    # Subtract the mean and divide by standard deviation (so mean=0, and std = 1)
+    scaled_images = (image_data - mean) / std
+    return scaled_images
+
+def preprocess(X,pca=None,principal_components=65):
+    X_standardized = standardize(image_data=X,axis=1) # standardize by rows
+    X_standardized_rows_centered = X_standardized - np.mean(X_standardized, axis=0) # center each feature around 0 to remove mean differences so PCA is not biased
+    if pca == None:
+        pca = PCA(n_components=principal_components) # make PCA, with specified principal components (by default 65 from previous findings. See eda.ipynb)
+        return pca.fit_transform(X_standardized_rows_centered),pca # fit then project and return the resulting projection and PCA object
+    else:
+        return pca.transform(X_standardized_rows_centered)
