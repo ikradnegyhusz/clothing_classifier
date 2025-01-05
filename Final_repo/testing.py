@@ -32,6 +32,8 @@ def bootstrapping_test(model_filepath,n=1000,prnt = True):
         X = sample.iloc[:,:-1].to_numpy()
         y = sample.iloc[:,-1].to_numpy()
         preds = model.predict(X)
+        if type(preds[0]) is np.array:
+            preds = np.argmax(preds,axis=1)
         accuracy = accuracy_score(y,preds)
         recall_score_list.append(recall_score(y, preds, average='weighted'))
         precision_score_list.append(precision_score(y, preds, average='weighted'))
